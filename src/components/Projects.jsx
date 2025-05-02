@@ -5,7 +5,7 @@ import ProjectOne from '../assets/ProjectsImg/ecr.jpg'
 import ProjectThree from '../assets/ProjectsImg/nextgen.jpg'
 import ProjectFour from '../assets/ProjectsImg/traysikol.jpg'
 
-const Projects = () => {
+const Projects = ({ darkMode }) => {
   const projects = [
     {
       id: 1,
@@ -56,12 +56,12 @@ const Projects = () => {
   };
 
   return (
-    <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div className={`py-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">My Projects</h2>
+          <h2 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Projects</h2>
           <div className="h-1 w-20 bg-blue-600 mx-auto"></div>
-          <p className="mt-4 text-xl text-gray-600">
+          <p className={`mt-4 text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Check out some of my recent work
           </p>
         </div>
@@ -71,12 +71,14 @@ const Projects = () => {
           <div className="flex items-center justify-center">
             <button 
               onClick={prevProject}
-              className="absolute left-0 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 lg:-left-5"
+              className={`absolute left-0 z-10 p-2 rounded-full shadow-md lg:-left-5 ${
+                darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+              }`}
             >
-              <ChevronLeft className="h-6 w-6 text-gray-600" />
+              <ChevronLeft className={`h-6 w-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </button>
             
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className={`rounded-xl shadow-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="md:flex">
                 <div className="md:w-1/2">
                   <img 
@@ -86,17 +88,21 @@ const Projects = () => {
                   />
                 </div>
                 <div className="p-8 md:w-1/2">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                  <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {projects[currentIndex].title}
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {projects[currentIndex].description}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-6">
                     {projects[currentIndex].tags.map((tag, index) => (
                       <span 
                         key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full"
+                        className={`px-3 py-1 text-sm font-medium rounded-full ${
+                          darkMode 
+                            ? 'bg-blue-900 text-blue-200' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
                       >
                         {tag}
                       </span>
@@ -115,7 +121,11 @@ const Projects = () => {
                       href={projects[currentIndex].githubLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center px-4 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                      className={`flex items-center px-4 py-2 border-2 font-medium rounded-lg transition-colors ${
+                        darkMode 
+                          ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
                     >
                       Code <Github className="ml-2 h-4 w-4" />
                     </a>
@@ -126,9 +136,11 @@ const Projects = () => {
             
             <button 
               onClick={nextProject}
-              className="absolute right-0 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 lg:-right-5"
+              className={`absolute right-0 z-10 p-2 rounded-full shadow-md lg:-right-5 ${
+                darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+              }`}
             >
-              <ChevronRight className="h-6 w-6 text-gray-600" />
+              <ChevronRight className={`h-6 w-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </button>
           </div>
           
@@ -139,7 +151,7 @@ const Projects = () => {
                 key={index}
                 onClick={() => setCurrentIndex(index)}
                 className={`h-3 w-3 rounded-full ${
-                  index === currentIndex ? "bg-blue-600" : "bg-gray-300"
+                  index === currentIndex ? "bg-blue-600" : darkMode ? "bg-gray-600" : "bg-gray-300"
                 }`}
               />
             ))}
@@ -151,7 +163,11 @@ const Projects = () => {
             href="https://github.com/Lazytech15"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-6 py-3 border-2 border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors"
+            className={`inline-flex items-center px-6 py-3 border-2 font-medium rounded-lg transition-colors ${
+              darkMode 
+                ? 'border-blue-600 text-blue-400 hover:bg-blue-900 hover:bg-opacity-30' 
+                : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+            }`}
           >
             See More Projects <Github className="ml-2 h-5 w-5" />
           </a>

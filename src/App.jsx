@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/navbar';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
@@ -9,7 +9,27 @@ import Footer from './components/Footer';
 import LogoIcon from './assets/logo.jpg'; 
 
 function App() {
-  // Add smooth scrolling behavior using a React approach
+  // Initialize dark mode from localStorage or default to false
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check if we have a saved preference in localStorage
+    const savedDarkMode = localStorage.getItem('darkMode');
+    // Return the parsed value if it exists, otherwise default to false
+    return savedDarkMode ? JSON.parse(savedDarkMode) : false;
+  });
+
+  // Save dark mode preference to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    
+    // Apply dark mode class to document
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Add smooth scrolling behavior
   useEffect(() => {
     // Set smooth scrolling on the html element
     document.documentElement.style.scrollBehavior = 'smooth';
@@ -43,7 +63,7 @@ function App() {
   };
 
   return (
-    <>
+    <div className={darkMode ? 'dark' : ''}>
       <Navbar 
         logo={LogoIcon}
         logoAlt="Portfolio Logo"
@@ -55,26 +75,28 @@ function App() {
           { text: "Contact", href: "#contact", onClick: handleSmoothScroll }
         ]}
         ctaButton={{ text: "Resume", href: "/resume" }}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
       />
       <main>
         <section id="home" className="scroll-mt-16">
-          <Hero />
+          <Hero darkMode={darkMode} />
         </section>
         <section id="projects" className="scroll-mt-16">
-          <Projects />
+          <Projects darkMode={darkMode} />
         </section>
         <section id="skills" className="scroll-mt-16">
-          <Skills />
+          <Skills darkMode={darkMode} />
         </section>
         <section id="about" className="scroll-mt-16">
-          <About />
+          <About darkMode={darkMode} />
         </section>
         <section id="contact" className="scroll-mt-16">
-          <Contact />
+          <Contact darkMode={darkMode} />
         </section>
       </main>
-      <Footer />
-    </>
+      <Footer darkMode={darkMode} />
+    </div>
   );
 }
 
