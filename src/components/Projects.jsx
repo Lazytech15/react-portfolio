@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ExternalLink, Github, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ExternalLink, Github, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import ProjectTwo from '../assets/ProjectsImg/dclc.jpg'
 import ProjectOne from '../assets/ProjectsImg/ecr.jpg'
 import ProjectThree from '../assets/ProjectsImg/nextgen.jpg'
@@ -46,55 +46,107 @@ const Projects = ({ darkMode }) => {
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const nextProject = () => {
+  // Function to advance to next project
+  const nextProject = useCallback(() => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % projects.length);
+  }, [projects.length]);
+
+  // Function to go back to previous project
+  const prevProject = useCallback(() => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + projects.length) % projects.length);
+  }, [projects.length]);
+
+  // Toggle auto-play pause/play
+  const togglePause = () => {
+    setIsPaused(!isPaused);
   };
 
-  const prevProject = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + projects.length) % projects.length);
+  // Auto-advance carousel every 5 seconds when not paused
+  useEffect(() => {
+    let intervalId;
+    
+    if (!isPaused) {
+      intervalId = setInterval(() => {
+        nextProject();
+      }, 5000);
+    }
+    
+    // Clean up interval on component unmount or when paused changes
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isPaused, nextProject]);
+
+  // Reset auto-play timer when manually changing slides
+  const handleManualNav = (action) => {
+    if (!isPaused) {
+      setIsPaused(true);
+      // Resume auto-play after 10 seconds of inactivity
+      setTimeout(() => setIsPaused(false), 10000);
+    }
+    action();
   };
 
   return (
     <div className={`py-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Projects</h2>
+          <h2 className={`text-3xl font-bold Rowdies mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Projects</h2>
           <div className="h-1 w-20 bg-blue-600 mx-auto"></div>
-          <p className={`mt-4 text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className={`mt-4 text-xl Open-San ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Check out some of my recent work
           </p>
         </div>
 
-        {/* Project Showcase */}
+        {/* Project Showcase with Auto-Carousel */}
         <div className="relative">
           <div className="flex items-center justify-center">
             <button 
-              onClick={prevProject}
+              onClick={() => handleManualNav(prevProject)}
               className={`absolute left-0 z-10 p-2 rounded-full shadow-md lg:-left-5 ${
                 darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
               }`}
+              aria-label="Previous project"
             >
               <ChevronLeft className={`h-6 w-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </button>
             
             <div className={`rounded-xl shadow-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="md:flex">
-                <div className="md:w-1/2">
+                <div className="md:w-1/2 relative">
                   <img 
                     src={projects[currentIndex].image} 
                     alt={projects[currentIndex].title}
-                    className="h-64 w-full object-cover md:h-full" 
+                    className="h-64 w-full object-cover md:h-full transition-opacity duration-300" 
                   />
+                  
+                  {/* Play/Pause Button */}
+                  <button
+                    onClick={togglePause}
+                    className={`absolute bottom-4 right-4 p-2 rounded-full opacity-70 hover:opacity-100 transition-opacity ${
+                      darkMode ? 'bg-gray-900' : 'bg-white'
+                    }`}
+                    aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+                  >
+                    {isPaused ? (
+                      <Play className={`h-4 w-4 ${darkMode ? 'text-white' : 'text-gray-800'}`} />
+                    ) : (
+                      <Pause className={`h-4 w-4 ${darkMode ? 'text-white' : 'text-gray-800'}`} />
+                    )}
+                  </button>
                 </div>
                 <div className="p-8 md:w-1/2">
-                  <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h3 className={`text-2xl font-bold Rowdies mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {projects[currentIndex].title}
                   </h3>
-                  <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p className={`mb-6 Open-San ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {projects[currentIndex].description}
                   </p>
-                  <div className="flex flex-wrap gap-2 mb-6">
+                  <div className="flex flex-wrap gap-2 mb-6 Roboto-Slab">
                     {projects[currentIndex].tags.map((tag, index) => (
                       <span 
                         key={index}
@@ -113,7 +165,7 @@ const Projects = ({ darkMode }) => {
                       href={projects[currentIndex].liveLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      className="flex items-center px-4 py-2 Open-Sans bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       Live Demo <ExternalLink className="ml-2 h-4 w-4" />
                     </a>
@@ -121,7 +173,7 @@ const Projects = ({ darkMode }) => {
                       href={projects[currentIndex].githubLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center px-4 py-2 border-2 font-medium rounded-lg transition-colors ${
+                      className={`flex items-center px-4 py-2 border-2 font-medium rounded-lg transition-colors Open-Sans ${
                         darkMode 
                           ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
                           : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -135,24 +187,30 @@ const Projects = ({ darkMode }) => {
             </div>
             
             <button 
-              onClick={nextProject}
+              onClick={() => handleManualNav(nextProject)}
               className={`absolute right-0 z-10 p-2 rounded-full shadow-md lg:-right-5 ${
                 darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
               }`}
+              aria-label="Next project"
             >
               <ChevronRight className={`h-6 w-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </button>
           </div>
           
-          {/* Dots Indicator */}
+          {/* Progress Indicators */}
           <div className="flex justify-center mt-6 space-x-2">
             {projects.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-3 w-3 rounded-full ${
-                  index === currentIndex ? "bg-blue-600" : darkMode ? "bg-gray-600" : "bg-gray-300"
+                onClick={() => {
+                  handleManualNav(() => setCurrentIndex(index));
+                }}
+                className={`h-3 w-3 rounded-full transition-all duration-300 ${
+                  index === currentIndex 
+                    ? "bg-blue-600 w-6" 
+                    : darkMode ? "bg-gray-600" : "bg-gray-300"
                 }`}
+                aria-label={`Go to project ${index + 1}`}
               />
             ))}
           </div>

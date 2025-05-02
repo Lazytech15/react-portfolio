@@ -71,9 +71,9 @@ export default function SkillsPreview({ darkMode }) {
     <div href="#skills" className={`py-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className={`text-4xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Skills</h2>
+          <h2 className={`text-4xl font-bold mb-2 Rowdies ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Skills</h2>
           <div className="h-1 w-24 bg-blue-600 mx-auto"></div>
-          <p className={`mt-6 text-xl max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className={`mt-6 text-xl max-w-2xl mx-auto Open-Sans ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Technologies and tools I work with to bring ideas to life
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function SkillsPreview({ darkMode }) {
               <div className="flex items-center justify-center mb-6">
                 <span className="text-4xl mb-2">{category.icon}</span>
               </div>
-              <h3 className={`text-2xl font-bold text-center mb-6 border-b pb-4 ${
+              <h3 className={`text-2xl font-bold text-center National-Park mb-6 border-b pb-4 ${
                 darkMode ? 'text-white border-gray-700' : 'text-gray-800 border-gray-200'
               }`}>
                 {category.title}
@@ -98,7 +98,7 @@ export default function SkillsPreview({ darkMode }) {
                 {category.skills.map((skill, skillIndex) => (
                   <div key={skillIndex}>
                     <div className="flex justify-between mb-2">
-                      <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                      <span className={`font-medium Roboto-Slab ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                         {skill.name}
                       </span>
                       <span className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>

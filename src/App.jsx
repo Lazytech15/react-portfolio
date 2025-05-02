@@ -7,6 +7,7 @@ import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import LogoIcon from './assets/logo.jpg'; 
+import useScrollTo from './utils/useScrollTo'; // Import our custom hook
 
 function App() {
   // Initialize dark mode from localStorage or default to false
@@ -16,6 +17,9 @@ function App() {
     // Return the parsed value if it exists, otherwise default to false
     return savedDarkMode ? JSON.parse(savedDarkMode) : false;
   });
+
+  // Use our custom scroll hook
+  const { handleLinkClick } = useScrollTo(64); // Assuming navbar height is 64px
 
   // Save dark mode preference to localStorage whenever it changes
   useEffect(() => {
@@ -29,38 +33,21 @@ function App() {
     }
   }, [darkMode]);
 
-  // Add smooth scrolling behavior
+  // Prevent default hash behavior
   useEffect(() => {
-    // Set smooth scrolling on the html element
-    document.documentElement.style.scrollBehavior = 'smooth';
+    // Prevent the browser from jumping to the element when hash changes
+    const preventScrollOnHashChange = (e) => {
+      if (e.target.location.hash) {
+        e.preventDefault();
+      }
+    };
     
-    // Clean up function to remove the style when component unmounts
+    window.addEventListener('hashchange', preventScrollOnHashChange);
+    
     return () => {
-      document.documentElement.style.scrollBehavior = '';
+      window.removeEventListener('hashchange', preventScrollOnHashChange);
     };
   }, []);
-
-  // Handler for smooth scrolling that can be passed to components
-  const handleSmoothScroll = (e) => {
-    e.preventDefault();
-    const href = e.currentTarget.getAttribute('href');
-    
-    if (href && href.startsWith('#')) {
-      const targetId = href.substring(1);
-      const targetElement = document.getElementById(targetId);
-      
-      if (targetElement) {
-        // Scroll to the element
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-        
-        // Update URL without page jump
-        window.history.pushState(null, '', href);
-      }
-    }
-  };
 
   return (
     <div className={darkMode ? 'dark' : ''}>
@@ -68,17 +55,17 @@ function App() {
         logo={LogoIcon}
         logoAlt="Portfolio Logo"
         menuItems={[
-          { text: "Home", href: "#home", onClick: handleSmoothScroll },
-          { text: "Projects", href: "#projects", onClick: handleSmoothScroll },
-          { text: "Skills", href: "#skills", onClick: handleSmoothScroll },
-          { text: "About", href: "#about", onClick: handleSmoothScroll },
-          { text: "Contact", href: "#contact", onClick: handleSmoothScroll }
+          { text: "Home", href: "#home", onClick: handleLinkClick },
+          { text: "Projects", href: "#projects", onClick: handleLinkClick },
+          { text: "Skills", href: "#skills", onClick: handleLinkClick },
+          { text: "About", href: "#about", onClick: handleLinkClick },
+          { text: "Contact", href: "#contact", onClick: handleLinkClick }
         ]}
         ctaButton={{ text: "Resume", href: "/resume" }}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
       />
-      <main>
+      <main className="pt-16">
         <section id="home" className="scroll-mt-16">
           <Hero darkMode={darkMode} />
         </section>

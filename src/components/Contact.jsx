@@ -36,11 +36,11 @@ const Contact = ({ darkMode }) => {
   };
 
   return (
-    <div className={`py-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <div className={`py-20 px-4 sm:px-6 lg:px-8 National-Park ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Get In Touch</h2>
-          <p className={`text-lg max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 Rowdies ${darkMode ? 'text-white' : 'text-gray-900'}`}>Get In Touch</h2>
+          <p className={`text-lg max-w-2xl mx-auto Open-Sans ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Have a project in mind or want to chat? Feel free to reach out!
           </p>
         </div>
@@ -56,8 +56,8 @@ const Contact = ({ darkMode }) => {
                   <Mail size={20} />
                 </div>
                 <div>
-                  <h4 className={`text-lg font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Email</h4>
-                  <a href="mailto:emmanuelablao16@gmail.com" className={`hover:text-blue-500 transition-colors ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <h4 className={`text-lg font-medium Roboto-Slab ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Email</h4>
+                  <a href="mailto:emmanuelablao16@gmail.com" className={`hover:text-blue-500 transition-colors ${darkMode ? 'text-gray-300' : 'text-gray-600'} Open-Sans`}>
                     emmanuelablao16@gmail.com
                   </a>
                 </div>
@@ -68,12 +68,12 @@ const Contact = ({ darkMode }) => {
                   <Phone size={20} />
                 </div>
                 <div>
-                  <h4 className={`text-lg font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Phone</h4>
+                  <h4 className={`text-lg font-medium Roboto-Slab ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Phone</h4>
                   <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                    <span className="block">
+                    <span className="block Open-Sans">
                       <strong>Globe:</strong> <a href="tel:+639955116005" className="hover:text-blue-500 transition-colors">+63 9955116005</a>
                     </span>
-                    <span className="block mt-2">
+                    <span className="block mt-2 Open-Sans">
                       <strong>Smart:</strong> <a href="tel:+639519044954" className="hover:text-blue-500 transition-colors">+63 9519044954</a>
                     </span>
                   </p>
@@ -85,7 +85,7 @@ const Contact = ({ darkMode }) => {
                   <MapPin size={20} />
                 </div>
                 <div>
-                  <h4 className={`text-lg font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Location</h4>
+                  <h4 className={`text-lg font-medium Roboto-Slab ${darkMode ? 'text-gray-200' : 'text-gray-900'} Open-Sans`}>Location</h4>
                   <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
                     Pililla Rizal, Philippines
                   </p>
@@ -94,7 +94,7 @@ const Contact = ({ darkMode }) => {
             </div>
             
             <div className="mt-12">
-              <h4 className={`text-lg font-medium mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Follow Me</h4>
+              <h4 className={`text-lg font-medium mb-4 Roboto-Slab ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Follow Me</h4>
               <div className="flex space-x-4">
                 {/* Social Media Icons */}
                 <a href="https://www.facebook.com/emman.ablao" className={`p-3 rounded-full transition-colors ${
