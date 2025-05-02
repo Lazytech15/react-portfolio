@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Menu, X } from 'lucide-react';
+import useScrollTo from '../utils/useScrollTo';
 
 const Navbar = ({ logo, logoAlt, menuItems, ctaButton, darkMode, setDarkMode }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { handleLinkClick } = useScrollTo();
 
   // Toggle menu open/closed
   const toggleMenu = () => {
@@ -31,11 +33,11 @@ const Navbar = ({ logo, logoAlt, menuItems, ctaButton, darkMode, setDarkMode }) 
       <nav className={`fixed top-0 left-0 right-0 w-full p-4 shadow-md Cal-Sans z-40 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
         <div className="container mx-auto flex justify-between items-center">
           {/* Logo */}
-          <div className="flex items-center">
-            {logo && <img src={logo} alt={logoAlt || "Logo"} className="h-8 rounded-full" />}
-          </div>
+                <div className="flex items-center">
+                {logo && <img href="#home" onClick={handleLinkClick} src={logo} alt={logoAlt || "Logo"} className="h-8 rounded-full cursor-pointer" />}
+                </div>
 
-          {/* Desktop Navigation */}
+                {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             {menuItems.map((item, index) => (
               <a
@@ -51,7 +53,7 @@ const Navbar = ({ logo, logoAlt, menuItems, ctaButton, darkMode, setDarkMode }) 
             {/* Dark Mode Toggle - Desktop */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:text-white dark:hover:bg-gray-700  transition duration-300"
               aria-label="Toggle Dark Mode"
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}

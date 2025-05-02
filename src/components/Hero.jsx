@@ -1,8 +1,12 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import profile from '../assets/profile.jpg';
+import useScrollTo from '../utils/useScrollTo';
 
 const Hero = ({ darkMode }) => {
+  // Initialize the hook
+  const { handleLinkClick } = useScrollTo();
+
   return (
     <div className={`py-20 px-4 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
       <div className="container mx-auto flex flex-col-reverse md:flex-row items-center justify-between">
@@ -24,6 +28,7 @@ const Hero = ({ darkMode }) => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
             <a 
               href="#projects" 
+              onClick={handleLinkClick}
               className={`px-6 py-3 rounded flex items-center justify-center Roboto-Slab gap-2 transition duration-300 ${
                 darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'
               } text-white font-medium`}
@@ -33,6 +38,7 @@ const Hero = ({ darkMode }) => {
             
             <a 
               href="#contact" 
+              onClick={handleLinkClick}
               className={`px-6 py-3 rounded flex items-center justify-center Roboto-Slab gap-2 transition duration-300 ${
                 darkMode ? 'border-white text-white hover:bg-gray-800' : 'border-blue-500 text-blue-500 hover:bg-gray-100'
               } border`}

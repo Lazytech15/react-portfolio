@@ -1,14 +1,10 @@
 import React from 'react';
 import { ArrowUp, Mail, Github, Linkedin, Twitter } from 'lucide-react';
-import LogoIcon from '../assets/logo.jpg'; // Assuming you have a logo icon
+import LogoIcon from '../assets/logo.jpg';
+import useScrollTo from '../utils/useScrollTo';
 
 const Footer = () => {
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
+  const { handleLinkClick } = useScrollTo();
 
   const currentYear = new Date().getFullYear();
 
@@ -63,19 +59,19 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#home" className="text-gray-400 hover:text-white transition-colors">Home</a>
+                <a href="#home" onClick={handleLinkClick} className="text-gray-400 hover:text-white transition-colors">Home</a>
               </li>
               <li>
-                <a href="#projects" className="text-gray-400 hover:text-white transition-colors">Projects</a>
+                <a href="#projects" onClick={handleLinkClick} className="text-gray-400 hover:text-white transition-colors">Projects</a>
               </li>
               <li>
-                <a href="#skills" className="text-gray-400 hover:text-white transition-colors">Skills</a>
+                <a href="#skills" onClick={handleLinkClick} className="text-gray-400 hover:text-white transition-colors">Skills</a>
               </li>
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors">About</a>
+                <a href="#about" onClick={handleLinkClick} className="text-gray-400 hover:text-white transition-colors">About</a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-white transition-colors">Contact</a>
+                <a href="#contact" onClick={handleLinkClick} className="text-gray-400 hover:text-white transition-colors">Contact</a>
               </li>
             </ul>
           </div>
@@ -111,7 +107,8 @@ const Footer = () => {
             © {currentYear} Emmanuel S. Ablao. All rights reserved.
           </p>
           <button
-            onClick={scrollToTop}
+            href="#home"
+            onClick={handleLinkClick}
             className="flex items-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
             aria-label="Scroll to top"
           >
