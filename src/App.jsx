@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/navbar';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
@@ -24,6 +24,21 @@ function App() {
   // State to control music player visibility and minimized state
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  
+  // Save audio playback state between player sessions
+  const [playerState, setPlayerState] = useState({
+    lastSongId: null,
+    currentTime: 0,
+    isPlaying: false
+  });
+
+  // Use a ref to store the latest player state to avoid state closure issues
+  const playerStateRef = useRef(playerState);
+  
+  // Update ref whenever state changes
+  useEffect(() => {
+    playerStateRef.current = playerState;
+  }, [playerState]);
 
   // Use our custom scroll hook
   const { handleLinkClick } = useScrollTo(64); // Assuming navbar height is 64px
@@ -56,20 +71,47 @@ function App() {
     };
   }, []);
 
-  // Toggle music player visibility
+  // Toggle music player visibility with improved state management
   const toggleMusicPlayer = () => {
-    if (!isMinimized) {
-      setShowMusicPlayer(!showMusicPlayer);
-    } else {
-      // If minimized, maximize it instead of closing
+    if (!showMusicPlayer) {
+      // Opening the player from fully closed state
+      setShowMusicPlayer(true);
       setIsMinimized(false);
+    } else if (isMinimized) {
+      // Expanding from minimized state - maintain playback
+      setIsMinimized(false);
+    } else {
+      // Minimizing from expanded state - maintain playback
+      setIsMinimized(true);
     }
   };
 
-  // Handle minimize/maximize state
+  // Handle minimize/maximize state with improved state preservation
   const handleMinimize = (minimized) => {
-    setIsMinimized(minimized);
+    // FIXED: Only update if the state is actually changing
+    if (isMinimized !== minimized) {
+      setIsMinimized(minimized);
+    }
   };
+
+  // Handle player state changes to persist between sessions
+  const handlePlayerStateChange = (newState) => {
+    // FIXED: Only update if something has actually changed
+    if (JSON.stringify(playerStateRef.current) !== JSON.stringify(newState)) {
+      setPlayerState(newState);
+    }
+  };
+
+  // Close button handler for the modal
+  const handleCloseModal = (e) => {
+    e.stopPropagation();
+    // Instead of closing completely, minimize to preserve audio state
+    setIsMinimized(true);
+  };
+
+  // Create a unified component key that doesn't change during view transitions
+  // This is crucial to prevent component remounting which interrupts audio
+  const playerKey = "music-player";
 
   return (
     <div className={darkMode ? 'dark' : ''}>
@@ -88,8 +130,8 @@ function App() {
         setDarkMode={setDarkMode}
       />
 
-      {/* Music Player Toggle Button - Only show when player is not active */}
-      {!showMusicPlayer && (
+      {/* Music Player Toggle Button - Only show when player is not active or is minimized */}
+      {(!showMusicPlayer || isMinimized) && (
         <button
           onClick={toggleMusicPlayer}
           className="fixed bottom-6 right-6 z-50 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-all"
@@ -99,33 +141,53 @@ function App() {
         </button>
       )}
 
-      {/* Main music player modal - only displayed when not minimized */}
-      {showMusicPlayer && !isMinimized && (
-        <div 
-          className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm" 
-          onClick={toggleMusicPlayer}
-        >
-          <div className="w-full max-w-xl mx-4" onClick={(e) => e.stopPropagation()}>
-            <MusicPlayer
-              firestore={firestore}
-              songCollection="songs"
-              darkMode={darkMode}
-              onMinimize={handleMinimize}
-            />
-          </div>
-        </div>
-      )}
-      
-      {/* Minimized player that stays fixed at bottom of screen */}
-      {showMusicPlayer && isMinimized && (
-        <div className="fixed bottom-6 right-6 z-50 w-64 shadow-lg rounded-lg overflow-hidden">
-          <MusicPlayer
-            firestore={firestore}
-            songCollection="songs"
-            darkMode={darkMode}
-            onMinimize={handleMinimize}
-          />
-        </div>
+      {/* 
+        Main music player - rendered conditionally but with the same key
+        Using the same key prevents React from unmounting and remounting
+        which would interrupt audio playback
+      */}
+      {showMusicPlayer && (
+        <>
+          {/* Modal backdrop - only shown when player is expanded */}
+          {!isMinimized && (
+            <div 
+              className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm" 
+              onClick={handleCloseModal}
+            >
+              <div 
+                className="w-full max-w-xl mx-4" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MusicPlayer
+                  key={playerKey}
+                  firestore={firestore}
+                  songCollection="songs"
+                  darkMode={darkMode}
+                  onMinimize={handleMinimize}
+                  initialState={playerState}
+                  onStateChange={handlePlayerStateChange}
+                  isMinimized={isMinimized} // FIXED: Pass down the current minimized state
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Minimized player - only shown when player is minimized */}
+          {isMinimized && (
+            <div className="fixed bottom-6 right-6 z-50 w-64 shadow-lg rounded-lg overflow-hidden">
+              <MusicPlayer
+                key={playerKey}
+                firestore={firestore}
+                songCollection="songs"
+                darkMode={darkMode}
+                onMinimize={handleMinimize}
+                initialState={playerState}
+                onStateChange={handlePlayerStateChange}
+                isMinimized={isMinimized} // FIXED: Pass down the current minimized state
+              />
+            </div>
+          )}
+        </>
       )}
 
       <main className="pt-16">

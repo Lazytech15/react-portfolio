@@ -18,14 +18,16 @@ const MusicPlayer = ({
     firestore, // Pass the initialized Firestore instance
     songCollection = 'songs', // Collection name in Firestore where songs are stored
     darkMode = false, // Match with your app's theme
-    onMinimize = () => {} // Callback function when minimize button is pressed
+    onMinimize = () => { }, // Callback function when minimize button is pressed
+    initialState = null, // Initial state from parent component
+    onStateChange = () => { } // Callback to update parent with current state
 }) => {
     // Player states
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(initialState?.isPlaying || false);
     const [currentSong, setCurrentSong] = useState(null);
     const [songList, setSongList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [currentTime, setCurrentTime] = useState(0);
+    const [currentTime, setCurrentTime] = useState(initialState?.currentTime || 0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(0.7);
     const [isMuted, setIsMuted] = useState(false);
@@ -38,7 +40,9 @@ const MusicPlayer = ({
     // Refs
     const audioRef = useRef(null);
     const progressBarRef = useRef(null);
-    const currentPlaybackTime = useRef(0); // Store the current playback position
+    const currentPlaybackTime = useRef(initialState?.currentTime || 0); // Store the current playback position
+    const isInitialLoadRef = useRef(true); // Track initial load
+    const lastSongIdRef = useRef(initialState?.lastSongId || null); // Track which song was last playing
 
     // Fetch songs from Firestore
     useEffect(() => {
@@ -68,8 +72,17 @@ const MusicPlayer = ({
 
                 setSongList(songsData);
 
-                // Set the first song as current if there's no current song
-                if (songsData.length > 0 && !currentSong) {
+                // If we have a previously selected song from initialState, restore it
+                if (lastSongIdRef.current && songsData.length > 0) {
+                    const previousSong = songsData.find(song => song.id === lastSongIdRef.current);
+                    if (previousSong) {
+                        setCurrentSong(previousSong);
+                    } else {
+                        // If not found, set the first song
+                        setCurrentSong(songsData[0]);
+                    }
+                } else if (songsData.length > 0) {
+                    // Set the first song as current if there's no current song
                     setCurrentSong(songsData[0]);
                 }
 
@@ -85,20 +98,31 @@ const MusicPlayer = ({
         }
     }, [firestore, songCollection]);
 
+    // Update parent component with current state when it changes
+    useEffect(() => {
+        if (currentSong) {
+            onStateChange({
+                lastSongId: currentSong.id,
+                currentTime: currentPlaybackTime.current,
+                isPlaying: isPlaying
+            });
+        }
+    }, [currentSong, isPlaying, onStateChange]);
+
     // Load song durations
     const loadSongDuration = async (song) => {
         if (!song || !song.url) return;
-        
+
         // Create a temporary audio element to get duration
         const tempAudio = new Audio(song.url);
-        
+
         tempAudio.addEventListener('loadedmetadata', () => {
             setSongDurations(prev => ({
                 ...prev,
                 [song.id]: tempAudio.duration
             }));
         });
-        
+
         tempAudio.addEventListener('error', () => {
             console.error(`Error loading duration for: ${song.name}`);
         });
@@ -111,9 +135,9 @@ const MusicPlayer = ({
                 loadSongDuration(song);
             }
         });
-    }, [songList]);
+    }, [songList, songDurations]);
 
-    // Handle audio events
+    // Handle audio events - THIS IS THE CRITICAL PART
     useEffect(() => {
         const audio = audioRef.current;
 
@@ -127,7 +151,7 @@ const MusicPlayer = ({
 
         const handleLoadedMetadata = () => {
             setDuration(audio.duration);
-            
+
             // Update the duration in songDurations for the current song
             if (currentSong) {
                 setSongDurations(prev => ({
@@ -135,30 +159,51 @@ const MusicPlayer = ({
                     [currentSong.id]: audio.duration
                 }));
             }
-            
+
             // Important: Restore playback position after metadata is loaded
             if (currentPlaybackTime.current > 0) {
                 audio.currentTime = currentPlaybackTime.current;
-                
-                // If it was playing before, continue playing
-                if (isPlaying) {
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.error("Playback error:", error);
-                            setIsPlaying(false);
-                        });
+
+                // If it was playing before or on initial load with isPlaying true
+                if (isPlaying || (isInitialLoadRef.current && initialState?.isPlaying)) {
+                    playAudio();
+                    if (isInitialLoadRef.current) {
+                        isInitialLoadRef.current = false;
                     }
                 }
             }
         };
 
+        // Fixed handleEnded function in the audio event listeners section
         const handleEnded = () => {
             if (isRepeat) {
                 audio.currentTime = 0;
-                audio.play();
+                playAudio(); // Direct call to playAudio to ensure it starts
             } else {
-                playNextSong();
+                // Save current playing state before changing songs
+                const wasPlaying = isPlaying;
+
+                // The next part is executed when changing to the next song
+                const currentIndex = songList.findIndex(song => song.id === currentSong?.id);
+                const nextIndex = (currentIndex + 1) % songList.length;
+
+                // Set the next song
+                setCurrentSong(songList[nextIndex]);
+
+                // Reset time
+                currentPlaybackTime.current = 0;
+                setCurrentTime(0);
+
+                // Force play state to be true regardless of previous state
+                setIsPlaying(true);
+
+                // Ensure the audio plays after changing the song
+                // This needs to be delayed slightly to allow the audio element to update
+                setTimeout(() => {
+                    if (audioRef.current) {
+                        playAudio();
+                    }
+                }, 50);
             }
         };
 
@@ -182,26 +227,54 @@ const MusicPlayer = ({
             audio.removeEventListener('ended', handleEnded);
             audio.removeEventListener('progress', handleProgress);
         };
-    }, [isRepeat, currentSong, isPlaying]);
+    }, [isRepeat, currentSong, initialState, isPlaying]);
 
-    // Effect for playing/pausing
-    useEffect(() => {
+    // Helper function to safely play audio - IMPROVED IMPLEMENTATION
+    const playAudio = () => {
         const audio = audioRef.current;
-
         if (!audio) return;
 
-        if (isPlaying) {
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    setIsPlaying(true);
+                })
+                .catch(error => {
                     console.error("Playback error:", error);
                     setIsPlaying(false);
                 });
-            }
-        } else {
-            audio.pause();
         }
-    }, [isPlaying, currentSong]);
+    };
+
+    // Helper function to safely pause audio
+    const pauseAudio = () => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        audio.pause();
+        setIsPlaying(false);
+    };
+
+    // Effect for playing/pausing - IMPROVED IMPLEMENTATION
+    useEffect(() => {
+        if (isPlaying) {
+            playAudio();
+        } else {
+            pauseAudio();
+        }
+    }, [isPlaying]);
+
+    // Effect for loading a new song - IMPROVED IMPLEMENTATION
+    useEffect(() => {
+        if (currentSong && audioRef.current) {
+            // Reset time only when song changes
+            if (audioRef.current.src !== currentSong.url && currentSong.url) {
+                currentPlaybackTime.current = 0;
+                setCurrentTime(0);
+            }
+        }
+    }, [currentSong]);
 
     // Effect for volume changes
     useEffect(() => {
@@ -219,9 +292,11 @@ const MusicPlayer = ({
     // Seek in the song
     const handleSeek = (e) => {
         const seekTime = (e.nativeEvent.offsetX / progressBarRef.current.clientWidth) * duration;
-        audioRef.current.currentTime = seekTime;
-        setCurrentTime(seekTime);
-        currentPlaybackTime.current = seekTime; // Update the ref as well
+        if (audioRef.current) {
+            audioRef.current.currentTime = seekTime;
+            setCurrentTime(seekTime);
+            currentPlaybackTime.current = seekTime; // Update the ref as well
+        }
     };
 
     // Toggle mute
@@ -237,18 +312,14 @@ const MusicPlayer = ({
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
-    // Handle minimize/maximize
+    // Handle minimize/maximize - IMPROVED IMPLEMENTATION
     const toggleMinimize = () => {
-        // Important: Store current playback state before changing views
-        if (audioRef.current) {
-            currentPlaybackTime.current = audioRef.current.currentTime;
-        }
-        
-        setIsMinimized(!isMinimized);
-        onMinimize(!isMinimized);
+        const newMinimizedState = !isMinimized;
+        setIsMinimized(newMinimizedState);
+        onMinimize(newMinimizedState);
     };
 
-    // Play next song
+    // Fixed playNextSong function
     const playNextSong = () => {
         if (songList.length <= 1) return;
 
@@ -259,61 +330,70 @@ const MusicPlayer = ({
             let randomIndex;
             do {
                 randomIndex = Math.floor(Math.random() * songList.length);
-            } while (songList.length > 1 && songList[randomIndex].id === currentSong.id);
+            } while (songList.length > 1 && songList[randomIndex].id === currentSong?.id);
             nextIndex = randomIndex;
         } else {
             // Play the next song in the list
-            const currentIndex = songList.findIndex(song => song.id === currentSong.id);
-            nextIndex = (currentIndex + 1) % songList.length;
+            const currentIndex = songList.findIndex(song => song.id === currentSong?.id);
+            // Handle case where currentIndex might be -1 (if currentSong is null)
+            nextIndex = currentIndex === -1
+                ? 0
+                : (currentIndex + 1) % songList.length;
         }
 
-        // Reset playback position for new song
+        // Reset current time and set new song
         currentPlaybackTime.current = 0;
-        setCurrentSong(songList[nextIndex]);
-        setIsPlaying(true);
-    };
+        setCurrentTime(0);
 
-    // Play previous song
+        // Important: Set the song first, then set isPlaying in separate operations
+        setCurrentSong(songList[nextIndex]);
+
+        // Small delay before attempting to play to ensure the audio element has time to update
+        setTimeout(() => {
+            setIsPlaying(true);
+        }, 50);
+    }
+
+    // Play previous song - IMPROVED IMPLEMENTATION
     const playPrevSong = () => {
         if (songList.length <= 1) return;
 
-        if (audioRef.current.currentTime > 3) {
+        if (audioRef.current && audioRef.current.currentTime > 3) {
             // If more than 3 seconds into the song, restart it
             audioRef.current.currentTime = 0;
             currentPlaybackTime.current = 0;
+            setCurrentTime(0);
             return;
         }
 
         // Play the previous song
-        const currentIndex = songList.findIndex(song => song.id === currentSong.id);
+        const currentIndex = songList.findIndex(song => song.id === currentSong?.id);
         const prevIndex = (currentIndex - 1 + songList.length) % songList.length;
-        
-        // Reset playback position for new song
-        currentPlaybackTime.current = 0;
+
+        // Set new song and start playing
         setCurrentSong(songList[prevIndex]);
         setIsPlaying(true);
     };
 
-    // Select a specific song
+    // Select a specific song - IMPROVED IMPLEMENTATION
     const selectSong = (song) => {
         if (currentSong?.id === song.id) {
             // If selecting the same song, just toggle play/pause
             togglePlay();
         } else {
-            // Reset playback position for new song
-            currentPlaybackTime.current = 0;
+            // Reset playback position for new song and start playing
             setCurrentSong(song);
             setIsPlaying(true);
         }
     };
 
-    // We always render the audio element regardless of view mode
-    // This ensures consistent playback state
+    // We ALWAYS render the audio element with the same key to prevent remounting
+    // This is the key fix to the original problem
+    // FIX: Use null instead of empty string for src when no URL is available
     const audioElement = (
         <audio
-            key={currentSong?.id || 'empty'} // Key helps with song changes
             ref={audioRef}
-            src={currentSong?.url}
+            src={currentSong?.url || null}
             preload="auto"
         />
     );
@@ -322,9 +402,9 @@ const MusicPlayer = ({
     if (isMinimized) {
         return (
             <div className={`minimized-music-player ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} rounded-lg shadow-lg p-3 mx-auto flex items-center justify-between`}>
-                {/* Keep the audio element in both view modes */}
+                {/* Keep the audio element in both view modes with the SAME KEY */}
                 {audioElement}
-                
+
                 {/* Minimized song info */}
                 <div className="flex items-center flex-1 min-w-0">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${currentSong?.coverUrl ? 'p-0' : 'bg-blue-500'} overflow-hidden`}>
@@ -348,7 +428,7 @@ const MusicPlayer = ({
                         <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} truncate`}>{currentSong?.artist || 'Unknown Artist'}</p>
                     </div>
                 </div>
-                
+
                 {/* Minimized controls */}
                 <div className="flex items-center space-x-2 ml-2">
                     <button
@@ -358,7 +438,7 @@ const MusicPlayer = ({
                     >
                         <SkipBack size={16} />
                     </button>
-                    
+
                     <button
                         onClick={togglePlay}
                         className={`p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600`}
@@ -366,7 +446,7 @@ const MusicPlayer = ({
                     >
                         {isPlaying ? <Pause size={18} /> : <Play size={18} />}
                     </button>
-                    
+
                     <button
                         onClick={playNextSong}
                         className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
@@ -374,7 +454,7 @@ const MusicPlayer = ({
                     >
                         <SkipForward size={16} />
                     </button>
-                    
+
                     <button
                         onClick={toggleMinimize}
                         className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
@@ -390,7 +470,7 @@ const MusicPlayer = ({
     // Full player view
     return (
         <div className={`music-player ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} rounded-lg shadow-lg p-4 max-w-xl mx-auto`}>
-            {/* Keep the audio element in both view modes */}
+            {/* Keep the audio element in both view modes with the SAME KEY */}
             {audioElement}
 
             {/* Header with song info and minimize button */}
@@ -529,10 +609,10 @@ const MusicPlayer = ({
                                 key={song.id}
                                 onClick={() => selectSong(song)}
                                 className={`p-2 rounded flex items-center cursor-pointer ${currentSong?.id === song.id
-                                        ? 'bg-blue-500 text-white'
-                                        : darkMode
-                                            ? 'hover:bg-gray-700'
-                                            : 'hover:bg-gray-100'
+                                    ? 'bg-blue-500 text-white'
+                                    : darkMode
+                                        ? 'hover:bg-gray-700'
+                                        : 'hover:bg-gray-100'
                                     }`}
                             >
                                 <div className={`w-10 h-10 rounded-md flex items-center justify-center overflow-hidden ${song.coverUrl ? 'p-0' : 'bg-blue-600'}`}>
