@@ -9,8 +9,9 @@ import Footer from './components/Footer';
 import MusicPlayer from './pages/MusicPlayer';
 import LogoIcon from './assets/logo.jpg';
 import useScrollTo from './utils/useScrollTo';
-import { storage, firestore } from './utils/firebaseConfig.js';
 import { Music } from 'lucide-react';
+// Import the cloudinary music service
+import { cloudinaryConfig, useMusicData } from './utils/cloudinaryMusicService';
 
 function App() {
   // Initialize dark mode from localStorage or default to false
@@ -31,6 +32,9 @@ function App() {
     currentTime: 0,
     isPlaying: false
   });
+
+  // Use the music data hook from our service
+  const { songs: songList, isLoading: isLoadingSongs, error: songError, refetch: refetchSongs } = useMusicData();
 
   // Use a ref to store the latest player state to avoid state closure issues
   const playerStateRef = useRef(playerState);
@@ -88,7 +92,7 @@ function App() {
 
   // Handle minimize/maximize state with improved state preservation
   const handleMinimize = (minimized) => {
-    // FIXED: Only update if the state is actually changing
+    // Only update if the state is actually changing
     if (isMinimized !== minimized) {
       setIsMinimized(minimized);
     }
@@ -96,17 +100,10 @@ function App() {
 
   // Handle player state changes to persist between sessions
   const handlePlayerStateChange = (newState) => {
-    // FIXED: Only update if something has actually changed
+    // Only update if something has actually changed
     if (JSON.stringify(playerStateRef.current) !== JSON.stringify(newState)) {
       setPlayerState(newState);
     }
-  };
-
-  // Close button handler for the modal
-  const handleCloseModal = (e) => {
-    e.stopPropagation();
-    // Instead of closing completely, minimize to preserve audio state
-    setIsMinimized(true);
   };
 
   // Create a unified component key that doesn't change during view transitions
@@ -152,22 +149,38 @@ function App() {
           {!isMinimized && (
             <div 
               className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm" 
-              onClick={handleCloseModal}
+              onClick={() => handleMinimize(false)}
             >
               <div 
                 className="w-full max-w-xl mx-4" 
                 onClick={(e) => e.stopPropagation()}
               >
-                <MusicPlayer
-                  key={playerKey}
-                  firestore={firestore}
-                  songCollection="songs"
-                  darkMode={darkMode}
-                  onMinimize={handleMinimize}
-                  initialState={playerState}
-                  onStateChange={handlePlayerStateChange}
-                  isMinimized={isMinimized} // FIXED: Pass down the current minimized state
-                />
+                {isLoadingSongs ? (
+                  <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600 dark:text-gray-300">Loading music...</p>
+                  </div>
+                ) : songError ? (
+                  <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
+                    <p className="text-red-500">{songError}</p>
+                    <button 
+                      className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      onClick={refetchSongs}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : (
+                  <MusicPlayer
+                    key={playerKey}
+                    cloudinaryConfig={cloudinaryConfig}
+                    songList={songList}
+                    darkMode={darkMode}
+                    onMinimize={handleMinimize}
+                    initialState={playerState}
+                    onStateChange={handlePlayerStateChange}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -175,16 +188,26 @@ function App() {
           {/* Minimized player - only shown when player is minimized */}
           {isMinimized && (
             <div className="fixed bottom-6 right-6 z-50 w-64 shadow-lg rounded-lg overflow-hidden">
-              <MusicPlayer
-                key={playerKey}
-                firestore={firestore}
-                songCollection="songs"
-                darkMode={darkMode}
-                onMinimize={handleMinimize}
-                initialState={playerState}
-                onStateChange={handlePlayerStateChange}
-                isMinimized={isMinimized} // FIXED: Pass down the current minimized state
-              />
+              {isLoadingSongs ? (
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mx-auto"></div>
+                </div>
+              ) : songError ? (
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg text-center">
+                  <p className="text-red-500 text-xs">Failed to load music</p>
+                </div>
+              ) : (
+                <MusicPlayer
+                  key={playerKey}
+                  cloudinaryConfig={cloudinaryConfig}
+                  songList={songList}
+                  darkMode={darkMode}
+                  onMinimize={handleMinimize}
+                  initialState={playerState}
+                  onStateChange={handlePlayerStateChange}
+                  isMinimized={isMinimized}
+                />
+              )}
             </div>
           )}
         </>
