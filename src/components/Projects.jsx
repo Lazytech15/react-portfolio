@@ -66,13 +66,13 @@ const Projects = ({ darkMode }) => {
   // Auto-advance carousel every 5 seconds when not paused
   useEffect(() => {
     let intervalId;
-    
+
     if (!isPaused) {
       intervalId = setInterval(() => {
         nextProject();
       }, 5000);
     }
-    
+
     // Clean up interval on component unmount or when paused changes
     return () => {
       if (intervalId) {
@@ -105,31 +105,29 @@ const Projects = ({ darkMode }) => {
         {/* Project Showcase with Auto-Carousel */}
         <div className="relative">
           <div className="flex items-center justify-center">
-            <button 
+            <button
               onClick={() => handleManualNav(prevProject)}
-              className={`absolute left-0 z-10 p-2 rounded-full shadow-md lg:-left-5 ${
-                darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-              }`}
+              className={`absolute left-0 z-10 p-2 rounded-full shadow-md lg:-left-5 ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                }`}
               aria-label="Previous project"
             >
               <ChevronLeft className={`h-6 w-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </button>
-            
+
             <div className={`rounded-xl shadow-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="md:flex">
                 <div className="md:w-1/2 relative">
-                  <img 
-                    src={projects[currentIndex].image} 
+                  <img
+                    src={projects[currentIndex].image}
                     alt={projects[currentIndex].title}
-                    className="h-64 w-full object-cover md:h-full transition-opacity duration-300" 
+                    className="h-64 w-full object-cover md:h-full transition-opacity duration-300"
                   />
-                  
+
                   {/* Play/Pause Button */}
                   <button
                     onClick={togglePause}
-                    className={`absolute bottom-4 right-4 p-2 rounded-full opacity-70 hover:opacity-100 transition-opacity ${
-                      darkMode ? 'bg-gray-900' : 'bg-white'
-                    }`}
+                    className={`absolute bottom-4 right-4 p-2 rounded-full opacity-70 hover:opacity-100 transition-opacity ${darkMode ? 'bg-gray-900' : 'bg-white'
+                      }`}
                     aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
                   >
                     {isPaused ? (
@@ -139,29 +137,28 @@ const Projects = ({ darkMode }) => {
                     )}
                   </button>
                 </div>
-                <div className="p-8 md:w-1/2">
-                  <h3 className={`text-2xl font-bold Rowdies mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <div className="p-8 md:w-1/2 flex flex-col items-center md:items-start">
+                  <h3 className={`text-2xl font-bold Rowdies mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontSize: window.innerWidth < 768 ? '1.5rem' : null, textAlign: 'center', width: '90%' }}>
                     {projects[currentIndex].title}
                   </h3>
-                  <p className={`mb-6 Open-San ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p className={`mb-6 Open-San text-center md:text-left ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {projects[currentIndex].description}
                   </p>
-                  <div className="flex flex-wrap gap-2 mb-6 Roboto-Slab">
+                  <div className="flex flex-wrap gap-2 mb-6 justify-center md:justify-start Roboto-Slab">
                     {projects[currentIndex].tags.map((tag, index) => (
-                      <span 
+                      <span
                         key={index}
-                        className={`px-3 py-1 text-sm font-medium rounded-full ${
-                          darkMode 
-                            ? 'bg-blue-900 text-blue-200' 
+                        className={`px-3 py-1 text-sm font-medium rounded-full ${darkMode
+                            ? 'bg-blue-900 text-blue-200'
                             : 'bg-blue-100 text-blue-800'
-                        }`}
+                          }`}
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <div className="flex gap-4">
-                    <a 
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <a
                       href={projects[currentIndex].liveLink}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -169,15 +166,14 @@ const Projects = ({ darkMode }) => {
                     >
                       Live Demo <ExternalLink className="ml-2 h-4 w-4" />
                     </a>
-                    <a 
+                    <a
                       href={projects[currentIndex].githubLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center px-4 py-2 border-2 font-medium rounded-lg transition-colors Open-Sans ${
-                        darkMode 
-                          ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                      className={`flex items-center px-4 py-2 border-2 font-medium rounded-lg transition-colors Open-Sans ${darkMode
+                          ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                           : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       Code <Github className="ml-2 h-4 w-4" />
                     </a>
@@ -185,18 +181,17 @@ const Projects = ({ darkMode }) => {
                 </div>
               </div>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => handleManualNav(nextProject)}
-              className={`absolute right-0 z-10 p-2 rounded-full shadow-md lg:-right-5 ${
-                darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-              }`}
+              className={`absolute right-0 z-10 p-2 rounded-full shadow-md lg:-right-5 ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                }`}
               aria-label="Next project"
             >
               <ChevronRight className={`h-6 w-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </button>
           </div>
-          
+
           {/* Progress Indicators */}
           <div className="flex justify-center mt-6 space-x-2">
             {projects.map((_, index) => (
@@ -205,11 +200,10 @@ const Projects = ({ darkMode }) => {
                 onClick={() => {
                   handleManualNav(() => setCurrentIndex(index));
                 }}
-                className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
-                    ? "bg-blue-600 w-6" 
+                className={`h-3 w-3 rounded-full transition-all duration-300 ${index === currentIndex
+                    ? "bg-blue-600 w-6"
                     : darkMode ? "bg-gray-600" : "bg-gray-300"
-                }`}
+                  }`}
                 aria-label={`Go to project ${index + 1}`}
               />
             ))}
@@ -217,15 +211,14 @@ const Projects = ({ darkMode }) => {
         </div>
 
         <div className="mt-12 text-center">
-          <a 
+          <a
             href="https://github.com/Lazytech15"
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center px-6 py-3 border-2 font-medium rounded-lg transition-colors ${
-              darkMode 
-                ? 'border-blue-600 text-blue-400 hover:bg-blue-900 hover:bg-opacity-30' 
+            className={`inline-flex items-center px-6 py-3 border-2 font-medium rounded-lg transition-colors ${darkMode
+                ? 'border-blue-600 text-blue-400 hover:bg-blue-900 hover:bg-opacity-30'
                 : 'border-blue-600 text-blue-600 hover:bg-blue-50'
-            }`}
+              }`}
           >
             See More Projects <Github className="ml-2 h-5 w-5" />
           </a>

@@ -142,7 +142,7 @@ const Navbar = ({
 
       {/* Mobile Menu - Slide from right */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 z-50 shadow-lg transform transition-transform duration-300 ease-in-out md:hidden ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 h-full w-80 z-50 shadow-lg transform transition-transform duration-300 ease-in-out md:hidden ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           } ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
       >
         <div className="flex flex-col h-full pt-16 pb-6 px-4">
@@ -246,7 +246,7 @@ const Navbar = ({
 
       {/* Persistent Mobile Music Player - Rendered outside of menu */}
         {mobilePlayerActive && !isMenuOpen && playerState?.isPlaying && (
-          <div className={`fixed bottom-2 left-2 right-2 z-50 shadow-lg md:hidden p-2 rounded-full ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
+          <div className={`fixed bottom-1 left-2 right-2 z-50 shadow-lg md:hidden p-2 rounded-full ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
             <div className="flex items-center justify-evenly p-6 rounded-full h-1.5"> 
           <div className="flex-1 truncate mr-2">
             <p className="font-medium truncate Rowdies">{songList?.find(s => s.id === playerState?.lastSongId)?.name || 'Now Playing'}</p>
