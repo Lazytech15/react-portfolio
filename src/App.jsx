@@ -25,7 +25,7 @@ function App() {
   // State to control music player visibility and minimized state
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  
+
   // Save audio playback state between player sessions
   const [playerState, setPlayerState] = useState({
     lastSongId: null,
@@ -36,9 +36,12 @@ function App() {
   // Use the music data hook from our service
   const { songs: songList, isLoading: isLoadingSongs, error: songError, refetch: refetchSongs } = useMusicData();
 
+  // Use a ref to store the audio element - NEW
+  const audioRef = useRef(null);
+
   // Use a ref to store the latest player state to avoid state closure issues
   const playerStateRef = useRef(playerState);
-  
+
   // Update ref whenever state changes
   useEffect(() => {
     playerStateRef.current = playerState;
@@ -103,6 +106,11 @@ function App() {
     // Only update if something has actually changed
     if (JSON.stringify(playerStateRef.current) !== JSON.stringify(newState)) {
       setPlayerState(newState);
+
+      // Update the audio ref if provided by the MusicPlayer component
+      if (newState.audioElement && audioRef.current !== newState.audioElement) {
+        audioRef.current = newState.audioElement;
+      }
     }
   };
 
@@ -125,13 +133,30 @@ function App() {
         ctaButton={{ text: "Resume", href: "/resume" }}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
+        // Pass music player props to Navbar
+        musicPlayerProps={{
+          toggleMusicPlayer,
+          showMusicPlayer,
+          isMinimized,
+          songList,
+          isLoadingSongs,
+          songError,
+          refetchSongs,
+          darkMode
+        }}
+        // Pass player state management functions
+        playerState={playerState}
+        handlePlayerStateChange={handlePlayerStateChange}
+        playerKey={playerKey}
+        audioRef={audioRef} // Pass audioRef to Navbar
       />
 
       {/* Music Player Toggle Button - Only show when player is not active or is minimized */}
+      {/* Only show on desktop devices (hidden on mobile) */}
       {(!showMusicPlayer || isMinimized) && (
         <button
           onClick={toggleMusicPlayer}
-          className="fixed bottom-6 right-6 z-50 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-all"
+          className="fixed bottom-6 right-6 z-50 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-all hidden md:block"
           aria-label="Toggle Music Player"
         >
           <Music size={24} />
@@ -147,12 +172,12 @@ function App() {
         <>
           {/* Modal backdrop - only shown when player is expanded */}
           {!isMinimized && (
-            <div 
-              className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm" 
+            <div
+              className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm"
               onClick={() => handleMinimize(false)}
             >
-              <div 
-                className="w-full max-w-xl mx-4" 
+              <div
+                className="w-full max-w-xl mx-4"
                 onClick={(e) => e.stopPropagation()}
               >
                 {isLoadingSongs ? (
@@ -163,7 +188,7 @@ function App() {
                 ) : songError ? (
                   <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
                     <p className="text-red-500">{songError}</p>
-                    <button 
+                    <button
                       className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                       onClick={refetchSongs}
                     >
@@ -179,15 +204,16 @@ function App() {
                     onMinimize={handleMinimize}
                     initialState={playerState}
                     onStateChange={handlePlayerStateChange}
+                    audioRef={audioRef} // Pass audioRef to MusicPlayer
                   />
                 )}
               </div>
             </div>
           )}
-          
+
           {/* Minimized player - only shown when player is minimized */}
           {isMinimized && (
-            <div className="fixed bottom-6 right-6 z-50 w-64 shadow-lg rounded-lg overflow-hidden">
+            <div className="fixed bottom-6 right-6 z-50 w-64 shadow-lg rounded-lg overflow-hidden hidden md:block">
               {isLoadingSongs ? (
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mx-auto"></div>
@@ -206,6 +232,7 @@ function App() {
                   initialState={playerState}
                   onStateChange={handlePlayerStateChange}
                   isMinimized={isMinimized}
+                  audioRef={audioRef} // Pass audioRef to MusicPlayer
                 />
               )}
             </div>
@@ -213,9 +240,16 @@ function App() {
         </>
       )}
 
+      {/* Hidden audio element for maintaining playback state */}
+      <div style={{ display: 'none' }} id="persistent-audio-container"></div>
+
       <main className="pt-16">
         <section id="home" className="scroll-mt-16">
-          <Hero darkMode={darkMode} />
+          <Hero
+            darkMode={darkMode}
+            audioRef={audioRef}
+            playerState={playerState}
+          />
         </section>
         <section id="projects" className="scroll-mt-16">
           <Projects darkMode={darkMode} />

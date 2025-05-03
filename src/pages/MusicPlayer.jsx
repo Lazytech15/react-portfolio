@@ -42,9 +42,11 @@ const MusicPlayer = ({
   const [isShuffle, setIsShuffle] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [songDurations, setSongDurations] = useState({});
+  const [durationsLoaded, setDurationsLoaded] = useState(false);
 
   // Refs
   const audioRef = useRef(null);
+  const durationAudioRef = useRef(null); // New ref for duration preloading
   const progressBarRef = useRef(null);
   const currentPlaybackTime = useRef(initialState?.currentTime || 0);
   const isInitialLoadRef = useRef(true);
@@ -70,6 +72,77 @@ const MusicPlayer = ({
 
     processSongs();
   }, [initialSongList]);
+
+  // Create a new improved function to preload song durations
+  const preloadAllDurations = async () => {
+    if (songList.length === 0) return;
+    
+    // Create a new audio element specifically for preloading
+    const preloadAudio = new Audio();
+    const tempDurations = { ...songDurations };
+    let loadedCount = 0;
+    
+    // Create a promise-based function to load each song's duration
+    const loadDuration = (song) => {
+      return new Promise((resolve) => {
+        // Skip if we already have the duration
+        if (tempDurations[song.id] && tempDurations[song.id] > 0) {
+          resolve();
+          return;
+        }
+        
+        const handleLoaded = () => {
+          if (preloadAudio.duration && !isNaN(preloadAudio.duration)) {
+            tempDurations[song.id] = preloadAudio.duration;
+          }
+          preloadAudio.removeEventListener('loadedmetadata', handleLoaded);
+          preloadAudio.removeEventListener('error', handleError);
+          resolve();
+        };
+        
+        const handleError = () => {
+          console.error(`Failed to load duration for: ${song.name}`);
+          preloadAudio.removeEventListener('loadedmetadata', handleLoaded);
+          preloadAudio.removeEventListener('error', handleError);
+          resolve();
+        };
+        
+        preloadAudio.addEventListener('loadedmetadata', handleLoaded);
+        preloadAudio.addEventListener('error', handleError);
+        
+        // Set a timeout to prevent hanging on problematic files
+        const timeoutId = setTimeout(() => {
+          preloadAudio.removeEventListener('loadedmetadata', handleLoaded);
+          preloadAudio.removeEventListener('error', handleError);
+          resolve();
+        }, 3000);
+        
+        preloadAudio.src = song.cloudinaryId;
+        preloadAudio.load();
+      });
+    };
+    
+    // Load durations one by one
+    for (const song of songList) {
+      await loadDuration(song);
+      loadedCount++;
+    }
+    
+    // Update state with all durations at once
+    setSongDurations(tempDurations);
+    setDurationsLoaded(true);
+    
+    // Clean up
+    preloadAudio.src = '';
+    preloadAudio.load();
+  };
+
+  // Call the preload function when song list is ready
+  useEffect(() => {
+    if (songList.length > 0 && !durationsLoaded) {
+      preloadAllDurations();
+    }
+  }, [songList, durationsLoaded]);
 
   // Set initial song
   useEffect(() => {
@@ -353,9 +426,37 @@ const playNextSong = () => {
       // If selecting the same song, just toggle play/pause
       togglePlay();
     } else {
-      // Reset playback position for new song and start playing
+      // Reset playback position for new song
+      currentPlaybackTime.current = 0;
+      setCurrentTime(0);
+      
+      // Set the new song
       setCurrentSong(song);
-      setIsPlaying(true);
+      
+      // Set a listener to play after the song is loaded
+      const playAfterLoad = () => {
+        if (audioRef.current) {
+          // Remove this listener to avoid duplicates
+          audioRef.current.removeEventListener('loadeddata', playAfterLoad);
+          // Make sure we're at the beginning
+          audioRef.current.currentTime = 0;
+          // Start playing
+          setIsPlaying(true);
+          playAudio();
+        }
+      };
+      
+      // Add listener for the audio to be loaded
+      if (audioRef.current) {
+        audioRef.current.addEventListener('loadeddata', playAfterLoad);
+        
+        // Fallback in case the event doesn't fire
+        setTimeout(() => {
+          if (audioRef.current && !isPlaying) {
+            playAfterLoad();
+          }
+        }, 300);
+      }
     }
   };
 
@@ -569,7 +670,10 @@ const playNextSong = () => {
       {/* Song list with cover thumbnails */}
       {songList.length > 0 && (
         <div className={`mt-6 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <h4 className="text-sm font-semibold mb-2">Songs</h4>
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="text-sm font-semibold">Songs</h4>
+            {!durationsLoaded && <span className="text-xs text-blue-500 Open-Sans">Loading durations...</span>}
+          </div>
           <div className="overflow-y-auto max-h-48">
             {songList.map((song) => (
               <div
@@ -606,7 +710,10 @@ const playNextSong = () => {
                   <p className="font-medium truncate">{song.name}</p>
                   <p className="text-xs truncate">{song.artist}</p>
                 </div>
-                <span className="text-xs">{formatTime(songDurations[song.id] || 0)}</span>
+                {/* Duration for each song */}
+                <span className="text-xs">
+                  {songDurations[song.id] ? formatTime(songDurations[song.id]) : '...'}
+                </span>
               </div>
             ))}
           </div>
