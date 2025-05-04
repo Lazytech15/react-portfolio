@@ -14,7 +14,7 @@ import useScrollTo from "./utils/useScrollTo"
 import { Music } from "lucide-react"
 // Import the cloudinary music service and offline utilities
 import { cloudinaryConfig, useMusicData } from "./utils/cloudinaryMusicService"
-import { registerServiceWorker, isOnline, setupOnlineOfflineHandlers } from "./utils/offline-music-service"
+import { registerServiceWorker, isOnline, setupOnlineOfflineHandlers } from "./utils/offlineMusic-service"
 
 function App() {
   // Initialize dark mode from localStorage or default to false
