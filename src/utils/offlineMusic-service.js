@@ -1,4 +1,4 @@
-import { storeSongs, getAllSongs } from "./indexdb-service"
+import { storeSongs, getAllSongs } from "./indexdbService"
 
 // Function to check if the browser is online
 export const isOnline = () => {
