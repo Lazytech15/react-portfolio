@@ -1,4 +1,4 @@
-import { storeSongs, getAllSongs } from "./indexdbService"
+import { storeSongs, getAllSongs } from "./indexdb-service"
 
 // Function to check if the browser is online
 export const isOnline = () => {
@@ -9,7 +9,11 @@ export const isOnline = () => {
 export const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register("/service-worker.js")
+      // Get the base URL for the site
+      const baseUrl = window.location.pathname.replace(/\/[^/]*$/, "")
+
+      // Register with the correct path
+      const registration = await navigator.serviceWorker.register(`${baseUrl}/service-worker.js`)
       console.log("Service Worker registered with scope:", registration.scope)
       return registration
     } catch (error) {

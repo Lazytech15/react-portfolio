@@ -13,7 +13,11 @@
       // Check if service worker is supported
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
+          // Get the base URL for the site
+          const baseUrl = window.location.pathname.replace(/\/[^/]*$/, '');
+          
+          // Register the service worker with the correct path
+          navigator.serviceWorker.register(`${baseUrl}/service-worker.js`)
             .then(registration => {
               console.log('ServiceWorker registration successful with scope: ', registration.scope);
             })

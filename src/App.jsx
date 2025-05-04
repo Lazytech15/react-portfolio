@@ -14,7 +14,7 @@ import useScrollTo from "./utils/useScrollTo"
 import { Music } from "lucide-react"
 // Import the cloudinary music service and offline utilities
 import { cloudinaryConfig, useMusicData } from "./utils/cloudinaryMusicService"
-import { registerServiceWorker, isOnline, setupOnlineOfflineHandlers } from "./utils/offlineMusic-service"
+import { registerServiceWorker, isOnline, setupOnlineOfflineHandlers } from "./utils/offline-music-service"
 
 function App() {
   // Initialize dark mode from localStorage or default to false
@@ -57,9 +57,21 @@ function App() {
     playerStateRef.current = playerState
   }, [playerState])
 
+  // Update just the service worker registration part in useEffect
   // Register service worker on mount
   useEffect(() => {
-    registerServiceWorker()
+    const registerSW = async () => {
+      try {
+        const registration = await registerServiceWorker()
+        if (registration) {
+          console.log("Service worker registered successfully")
+        }
+      } catch (error) {
+        console.error("Failed to register service worker:", error)
+      }
+    }
+
+    registerSW()
   }, [])
 
   // Set up online/offline event handlers

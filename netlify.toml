@@ -1,0 +1,14 @@
+[build]
+  publish = "dist"  # Adjust this to your build output directory (could be "build" for CRA)
+
+# Ensure service worker is properly handled
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Redirect all routes to index.html for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
