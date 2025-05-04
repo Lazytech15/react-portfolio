@@ -9,7 +9,7 @@ export const isOnline = () => {
 export const registerServiceWorker = async () => {
   if ("serviceWorker" in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register("/service-worker.js")
+      const registration = await navigator.serviceWorker.register("/public/service-worker.js")
       console.log("Service Worker registered with scope:", registration.scope)
       return registration
     } catch (error) {

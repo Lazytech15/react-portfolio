@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { prefetchAndCacheSongs, getSongs, isOnline, setupOnlineOfflineHandlers } from "./offlineMusic-service"
 
