@@ -14,7 +14,6 @@ export const registerServiceWorker = async () => {
 
       // Register with the correct path
       const registration = await navigator.serviceWorker.register(`${baseUrl}/service-worker.js`)
-      console.log("Service Worker registered with scope:", registration.scope)
       return registration
     } catch (error) {
       console.error("Service Worker registration failed:", error)
@@ -57,7 +56,6 @@ export const prefetchAndCacheSongs = async (songs) => {
       })
     }
 
-    console.log("Songs prefetched and cached successfully")
     return true
   } catch (error) {
     console.error("Failed to prefetch and cache songs:", error)

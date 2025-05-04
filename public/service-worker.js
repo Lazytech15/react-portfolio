@@ -16,7 +16,6 @@ self.addEventListener("install", (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => {
-        console.log("Caching app shell");
         return cache.addAll(CORE_ASSETS);
       })
       .then(() => self.skipWaiting())
@@ -189,7 +188,6 @@ self.addEventListener("message", (event) => {
         .then((response) => {
           if (response.ok) {
             cache.put(url, response);
-            console.log("Cached music file:", url);
           }
         })
         .catch((err) => {

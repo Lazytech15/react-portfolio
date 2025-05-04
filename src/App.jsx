@@ -64,7 +64,6 @@ function App() {
       try {
         const registration = await registerServiceWorker()
         if (registration) {
-          console.log("Service worker registered successfully")
         }
       } catch (error) {
         console.error("Failed to register service worker:", error)

@@ -16,7 +16,6 @@ export const initDB = () => {
 
     request.onsuccess = (event) => {
       const db = event.target.result
-      console.log("IndexedDB opened successfully")
       resolve(db)
     }
 
@@ -50,7 +49,6 @@ export const storeSongs = async (songs) => {
 
     return new Promise((resolve, reject) => {
       transaction.oncomplete = () => {
-        console.log("All songs stored successfully")
         resolve(true)
       }
 
