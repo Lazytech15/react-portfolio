@@ -5,8 +5,8 @@ import emailjs from '@emailjs/browser';
 const Contact = ({ darkMode }) => {
   const form = useRef();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    user_name: '',     // Changed from 'name' to match input field
+    user_email: '',    // Changed from 'email' to match input field
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +27,6 @@ const Contact = ({ darkMode }) => {
     setError(null);
     
     // Send email using EmailJS
-    // Replace these with your actual EmailJS service, template, and user IDs
     emailjs.sendForm(
       'service_84ds9ei', 
       'template_lkfygnb', 
@@ -38,7 +37,7 @@ const Contact = ({ darkMode }) => {
         console.log('Email sent successfully:', result.text);
         setIsSubmitting(false);
         setIsSubmitted(true);
-        setFormData({ name: '', email: '', message: '' });
+        setFormData({ user_name: '', user_email: '', message: '' });  // Updated property names
         
         // Reset success message after 5 seconds
         setTimeout(() => {
@@ -155,7 +154,7 @@ const Contact = ({ darkMode }) => {
                     type="text"
                     id="user_name"
                     name="user_name"
-                    value={formData.name}
+                    value={formData.user_name}  // Changed from formData.name
                     onChange={handleChange}
                     required
                     className={`w-full px-4 py-3 rounded-lg transition-colors ${
@@ -175,7 +174,7 @@ const Contact = ({ darkMode }) => {
                     type="email"
                     id="user_email"
                     name="user_email"
-                    value={formData.email}
+                    value={formData.user_email}  // Changed from formData.email
                     onChange={handleChange}
                     required
                     className={`w-full px-4 py-3 rounded-lg transition-colors ${
