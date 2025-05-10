@@ -4,6 +4,7 @@ import ProjectTwo from '../assets/ProjectsImg/dclc.jpg'
 import ProjectOne from '../assets/ProjectsImg/ecr.jpg'
 import ProjectThree from '../assets/ProjectsImg/nextgen.jpg'
 import ProjectFour from '../assets/ProjectsImg/traysikol.jpg'
+import ProjectFive from '../assets/ProjectsImg/justsongstream.jpg'
 
 const Projects = ({ darkMode }) => {
   const projects = [
@@ -42,6 +43,15 @@ const Projects = ({ darkMode }) => {
       tags: ["React", "Laravel", "Taiwind CSS", "Node.js"],
       liveLink: "https://traysikol.cyberdyne.top/",
       githubLink: "https://github.com/Lazytech15/tricyhub",
+    },
+    {
+      id: 5,
+      title: "JustSongStream!",
+      description: "a web application for streaming songs that can stream online and offline.",
+      image: ProjectFive,
+      tags: ["React", "Node.js", "Taiwind CSS", "Claudinary", "Firebase"],
+      liveLink: "https://justsongstream.netlify.app/",
+      githubLink: "https://github.com/Lazytech15/Just-Song",
     },
   ];
 

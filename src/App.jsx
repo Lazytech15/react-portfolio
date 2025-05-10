@@ -188,7 +188,10 @@ function App() {
           { text: "About", href: "#about", onClick: handleLinkClick },
           { text: "Contact", href: "#contact", onClick: handleLinkClick },
         ]}
-        ctaButton={{ text: "Resume", href: "/resume" }}
+        ctaButton={{
+          text: "Resume",
+          onClick: () => window.open("https://firebasestorage.googleapis.com/v0/b/musicstreameronline-f1691.appspot.com/o/Resume%2FMy%20resume.pdf?alt=media&token=58820fd6-3b66-4f02-b1c2-46ba3e05da24", "_blank", "noopener noreferrer"),
+        }}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         // Pass music player props to Navbar

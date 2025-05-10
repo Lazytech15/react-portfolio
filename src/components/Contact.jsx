@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const Contact = ({ darkMode }) => {
+  const form = useRef();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -9,6 +11,7 @@ const Contact = ({ darkMode }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,18 +24,32 @@ const Contact = ({ darkMode }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormData({ name: '', email: '', message: '' });
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 5000);
-    }, 1500);
+    // Send email using EmailJS
+    // Replace these with your actual EmailJS service, template, and user IDs
+    emailjs.sendForm(
+      'service_84ds9ei', 
+      'template_lkfygnb', 
+      form.current, 
+      'oISKdHxQTlz06KQWx'
+    )
+      .then((result) => {
+        console.log('Email sent successfully:', result.text);
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', message: '' });
+        
+        // Reset success message after 5 seconds
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 5000);
+      })
+      .catch((error) => {
+        console.error('Failed to send email:', error);
+        setIsSubmitting(false);
+        setError('Failed to send message. Please try again later.');
+      });
   };
 
   return (
@@ -129,15 +146,15 @@ const Contact = ({ darkMode }) => {
                 <p>I'll get back to you as soon as possible.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form ref={form} onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label htmlFor="user_name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Your Name
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
+                    id="user_name"
+                    name="user_name"
                     value={formData.name}
                     onChange={handleChange}
                     required
@@ -151,13 +168,13 @@ const Contact = ({ darkMode }) => {
                 </div>
                 
                 <div>
-                  <label htmlFor="email" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label htmlFor="user_email" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Your Email
                   </label>
                   <input
                     type="email"
-                    id="email"
-                    name="email"
+                    id="user_email"
+                    name="user_email"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -171,7 +188,7 @@ const Contact = ({ darkMode }) => {
                 </div>
                 
                 <div>
-                  <label htmlFor="message" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-white'}`}>
+                  <label htmlFor="message" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Your Message
                   </label>
                   <textarea
@@ -184,11 +201,17 @@ const Contact = ({ darkMode }) => {
                     className={`w-full px-4 py-3 rounded-lg transition-colors ${
                       darkMode 
                         ? 'bg-gray-700 border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
-                        : 'border border-gray-300  focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        : 'border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                     }`}
                     placeholder="Hello! I'd like to talk about a project..."
                   ></textarea>
                 </div>
+                
+                {error && (
+                  <div className={`p-3 rounded-lg ${darkMode ? 'bg-red-900 border border-red-700 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                    {error}
+                  </div>
+                )}
                 
                 <button
                   type="submit"
